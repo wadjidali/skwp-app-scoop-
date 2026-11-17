@@ -15,8 +15,6 @@ import {
 type State = {
   onboardingDone: boolean;
   signedIn: boolean;
-  remindersEnabled: boolean;
-  reminderDays: number[];
   profile: MyProfile;
   plan: PlanId;
   savedOpportunityIds: string[];
@@ -26,6 +24,8 @@ type State = {
   isIncognito: boolean;
   conversations: Conversation[];
   seenSwipeTutorial: boolean;
+  remindersEnabled: boolean;
+  reminderDays: number[];
 };
 
 type ChatContext = { title?: string; suggestion?: string };
@@ -33,8 +33,6 @@ type ChatContext = { title?: string; suggestion?: string };
 type Actions = {
   saveProfile: (profile: MyProfile) => void;
   setSignedIn: (value: boolean) => void;
-  setRemindersEnabled: (value: boolean) => void;
-  setReminderDays: (days: number[]) => void;
   setPlan: (plan: PlanId) => void;
   saveOpportunity: (id: string) => void;
   removeOpportunity: (id: string) => void;
@@ -47,6 +45,8 @@ type Actions = {
   receiveMessage: (conversationId: string, body: string) => void;
   markRead: (conversationId: string) => void;
   setSeenSwipeTutorial: (value: boolean) => void;
+  setRemindersEnabled: (value: boolean) => void;
+  setReminderDays: (days: number[]) => void;
   reset: () => void;
 };
 
@@ -66,8 +66,6 @@ export const DEFAULT_PROFILE: MyProfile = {
 const initialState: State = {
   onboardingDone: false,
   signedIn: false,
-  remindersEnabled: false,
-  reminderDays: [3, 1],
   profile: DEFAULT_PROFILE,
   plan: "free",
   savedOpportunityIds: [],
@@ -77,6 +75,8 @@ const initialState: State = {
   isIncognito: false,
   conversations: MOCK_CONVERSATIONS,
   seenSwipeTutorial: false,
+  remindersEnabled: false,
+  reminderDays: [3, 1],
 };
 
 const makeMessage = (
@@ -99,9 +99,6 @@ export const useAppStore = create<State & Actions>()(
       saveProfile: (profile) => set({ profile, onboardingDone: true }),
 
       setSignedIn: (value) => set({ signedIn: value }),
-      
-      setRemindersEnabled: (value) => set({ remindersEnabled: value }),
-      setReminderDays: (days) => set({ reminderDays: days }),
 
       setPlan: (plan) => set({ plan }),
 
@@ -206,6 +203,11 @@ export const useAppStore = create<State & Actions>()(
         ),
 
       setSeenSwipeTutorial: (value) => set({ seenSwipeTutorial: value }),
+
+      setRemindersEnabled: (value) => set({ remindersEnabled: value }),
+
+      setReminderDays: (days) => set({ reminderDays: days }),
+
       reset: () => set(initialState),
     }),
     {
@@ -222,7 +224,7 @@ export const useAppStore = create<State & Actions>()(
           profile: { ...current.profile, ...p.profile },
         };
       },
-    },signedIn: boolean;
+    },
   ),
 );
 

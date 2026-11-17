@@ -5,6 +5,7 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import "../../global.css";
 import { SplashScreen } from "../components/ui/SplashScreen";
 import { useNotificationTap, useReminderSync } from "../hooks/useReminders";
+import { checkSupabase } from "../lib/supabaseCheck";
 import { configureNotifications } from "../services/notifications";
 import { useHydrated } from "../store/useAppStore";
 
@@ -20,6 +21,10 @@ export default function RootLayout() {
   useEffect(() => {
     const t = setTimeout(() => setForced(true), 4000);
     return () => clearTimeout(t);
+  }, []);
+
+  useEffect(() => {
+    if (__DEV__) checkSupabase();
   }, []);
 
   useReminderSync();

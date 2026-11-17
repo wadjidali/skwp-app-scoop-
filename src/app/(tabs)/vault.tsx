@@ -1,4 +1,5 @@
 import { useRouter } from "expo-router";
+import { Bell } from "lucide-react-native";
 import { useMemo, useState } from "react";
 import { Alert, Pressable, ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -6,12 +7,10 @@ import { BusinessDashboard } from "../../components/dashboard/BusinessDashboard"
 import { GemCard } from "../../components/gems/GemCard";
 import { VaultEventRow } from "../../components/vault/VaultEventRow";
 import { MOCK_GEMS, MOCK_OPPORTUNITIES } from "../../data/mock";
+import { enableRemindersWithPrompt } from "../../services/notifications";
 import { useAppStore, useHydrated } from "../../store/useAppStore";
 import { Opportunity } from "../../types";
 import { isExpired } from "../../utils/date";
-import { Bell } from "lucide-react-native";
-import { enableRemindersWithPrompt } from "../../services/notifications";
-
 
 type Tab = "events" | "resources";
 type Mode = "dashboard" | "vault";
@@ -36,6 +35,7 @@ export default function VaultScreen() {
   const statuses = useAppStore((s) => s.myStatuses);
   const savedGemIds = useAppStore((s) => s.savedGemIds);
   const myGems = useAppStore((s) => s.myGems);
+  const remindersEnabled = useAppStore((s) => s.remindersEnabled);
   const removeOpportunity = useAppStore((s) => s.removeOpportunity);
   const toggleSaveGem = useAppStore((s) => s.toggleSaveGem);
 
@@ -66,11 +66,11 @@ export default function VaultScreen() {
     ]);
   };
 
-  const remindersEnabled = useAppStore((s) => s.remindersEnabled);
-
   if (!hydrated) return <View className="flex-1 bg-paper" />;
 
   const showDashboard = isBiz && mode === "dashboard";
+  const showReminderBanner =
+    tab === "events" && events.length > 0 && !remindersEnabled;
 
   const tabs: { key: Tab; label: string }[] = [
     { key: "events", label: `Événements (${events.length})` },
@@ -156,7 +156,8 @@ export default function VaultScreen() {
             className="mt-4"
             contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 40 }}
             showsVerticalScrollIndicator={false}
-            {tab === "events" && events.length > 0 && !remindersEnabled && (
+          >
+            {showReminderBanner && (
               <Pressable
                 onPress={() => enableRemindersWithPrompt()}
                 className="mb-4 flex-row items-center gap-3 rounded-2xl border-2 border-carbon bg-lime p-3 active:opacity-80"
@@ -174,7 +175,7 @@ export default function VaultScreen() {
                 </View>
               </Pressable>
             )}
-          >
+
             {tab === "events" ? (
               events.length === 0 ? (
                 <Empty

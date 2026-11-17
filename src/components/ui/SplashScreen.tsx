@@ -2,21 +2,23 @@ import * as Haptics from "expo-haptics";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { StyleSheet, Text, View, useWindowDimensions } from "react-native";
 import Animated, {
-    Easing,
-    SharedValue,
-    interpolate,
-    runOnJS,
-    useAnimatedStyle,
-    useSharedValue,
-    withDelay,
-    withSpring,
-    withTiming,
+  Easing,
+  SharedValue,
+  interpolate,
+  useAnimatedStyle,
+  useSharedValue,
+  withDelay,
+  withSpring,
+  withTiming,
 } from "react-native-reanimated";
 
 // Couleurs : modifie ici si tu veux un autre bleu (ex : "#0047FF")
 const BG = "#0038FF";
 const TILE_GREEN = "#39FF14";
 const INK = "#0A0A0C";
+
+// Durée avant la sortie (ms). Le slogan est entièrement visible vers 1400 ms.
+const HOLD_MS = 2400;
 
 const TILE = 56; // taille d'une tuile
 const GAP = 12;
@@ -129,7 +131,7 @@ export function SplashScreen({ onAnimationEnd, ready = true }: Props) {
     );
 
     const haptic = setTimeout(triggerHaptic, 720); // à l'emboîtement des tuiles
-    const intro = setTimeout(() => setIntroDone(true), 1500);
+    const intro = setTimeout(() => setIntroDone(true), HOLD_MS);
     return () => {
       clearTimeout(haptic);
       clearTimeout(intro);
@@ -140,13 +142,12 @@ export function SplashScreen({ onAnimationEnd, ready = true }: Props) {
   useEffect(() => {
     if (!introDone || !ready || exiting.current) return;
     exiting.current = true;
-    exit.value = withTiming(
-      1,
-      { duration: 400, easing: Easing.inOut(Easing.cubic) },
-      (finished) => {
-        if (finished) runOnJS(finish)();
-      },
-    );
+    exit.value = withTiming(1, {
+      duration: 400,
+      easing: Easing.inOut(Easing.cubic),
+    });
+    // Minuteur JS : le splash disparaît même si un rappel d'animation est perdu
+    setTimeout(finish, 430);
   }, [introDone, ready, exit, finish]);
 
   const fadeStyle = useAnimatedStyle(() => ({ opacity: 1 - exit.value }));
@@ -187,7 +188,12 @@ export function SplashScreen({ onAnimationEnd, ready = true }: Props) {
 
 const styles = StyleSheet.create({
   overlay: {
-    ...StyleSheet.absoluteFillObject,
+    // Position absolue écrite explicitement : plein écran, par-dessus l'application
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
     backgroundColor: BG,
     alignItems: "center",
     justifyContent: "center",
